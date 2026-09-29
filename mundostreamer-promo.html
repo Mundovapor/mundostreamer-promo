@@ -27,13 +27,20 @@
     *, *::before, *::after {
       box-sizing: border-box; margin: 0; padding: 0;
     }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
     body {
       background-color: var(--bg-base);
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      width: 100%;
+      position: relative;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
     }
 
     /* ──────────── ANIMATED BACKGROUND ──────────── */
@@ -126,9 +133,123 @@
       box-shadow: var(--glow-cyan);
       transform: translateY(-1px);
     }
-    @media (max-width: 680px) {
-      .nav-links { display: none; }
-      nav { padding: 12px 18px; }
+    /* ──────────── MOBILE NAV CONTROLS & DRAWER ──────────── */
+    .nav-mobile-right {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-mobile-cta {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #25d366 !important;
+      background: rgba(37, 211, 102, 0.12);
+      border: 1px solid rgba(37, 211, 102, 0.4);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .nav-mobile-cta:hover {
+      background: rgba(37, 211, 102, 0.22);
+    }
+    .nav-mobile-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 38px;
+      height: 38px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 8px;
+      cursor: pointer;
+      gap: 5px;
+      padding: 0;
+      transition: var(--transition);
+    }
+    .nav-mobile-toggle:hover {
+      background: rgba(0, 240, 255, 0.18);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+    .hamburger-bar {
+      width: 18px;
+      height: 2px;
+      background-color: var(--cyan);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+    .nav-mobile-toggle.active .hamburger-bar:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+    .nav-mobile-toggle.active .hamburger-bar:nth-child(2) {
+      opacity: 0;
+    }
+    .nav-mobile-toggle.active .hamburger-bar:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+    .nav-mobile-drawer {
+      display: none;
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      background: rgba(6, 9, 14, 0.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+      z-index: 199;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      opacity: 0;
+    }
+    .nav-mobile-drawer.open {
+      max-height: 85vh;
+      opacity: 1;
+      overflow-y: auto;
+    }
+    .nav-mobile-drawer-inner {
+      padding: 16px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-mobile-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: var(--transition);
+    }
+    .nav-mobile-link:hover, .nav-mobile-link:active {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: rgba(0, 240, 255, 0.25);
+      color: var(--cyan);
+    }
+    .nav-mobile-wa-btn {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px;
+      border-radius: 10px;
+      background: rgba(37, 211, 102, 0.15);
+      border: 1px solid rgba(37, 211, 102, 0.45);
+      color: #25d366;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+      box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
     }
 
     /* ──────────── HERO ──────────── */
@@ -706,6 +827,370 @@
     /* section center */
     .section-center { text-align: center; }
     .section-center .section-desc { margin-left: auto; margin-right: auto; }
+
+    /* ──────────── RESPONSIVE CLASSES & GRIDS ──────────── */
+    .dvr-metrics-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .dvr-metric-card {
+      text-align: center;
+      padding: 14px;
+      background: var(--bg-card);
+      border: 1px solid rgba(0,255,157,0.2);
+      border-radius: 12px;
+      transition: var(--transition);
+    }
+    .dvr-metric-val {
+      font-size: 1.4rem;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+    .dvr-metric-lbl {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 24px;
+    }
+
+    .manuals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .manual-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+      position: relative;
+    }
+    .manual-lang-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    .manual-callout-box {
+      margin-top: 28px;
+      padding: 18px 24px;
+      background: rgba(0,240,255,0.04);
+      border: 1px solid rgba(0,240,255,0.18);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* ──────────── MOBILE & TABLET MEDIA QUERIES ──────────── */
+    @media (max-width: 900px) {
+      .nav-links { display: none !important; }
+      .nav-mobile-right { display: flex !important; }
+      .nav-mobile-toggle { display: flex !important; }
+      .nav-mobile-cta { display: inline-flex !important; }
+      .nav-mobile-drawer { display: block !important; }
+      nav { padding: 12px 16px !important; }
+    }
+
+    @media (max-width: 768px) {
+      html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+      }
+      section {
+        padding: 50px 16px !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+      }
+      .hero {
+        padding: 85px 16px 40px !important;
+        min-height: auto !important;
+      }
+      .hero-logo-box {
+        margin-bottom: 16px !important;
+      }
+      .hero-logo-img {
+        width: 96px !important;
+        height: 96px !important;
+        border-radius: 20px !important;
+        padding: 4px !important;
+        box-shadow: 0 0 25px rgba(0,240,255,0.4), 0 0 50px rgba(255,0,127,0.2) !important;
+      }
+      .hero-badge {
+        font-size: 0.68rem !important;
+        padding: 5px 12px !important;
+        margin-bottom: 16px !important;
+        letter-spacing: 0.5px !important;
+        line-height: 1.3 !important;
+        max-width: 92% !important;
+        white-space: normal !important;
+        text-align: center !important;
+      }
+      .hero h1 {
+        font-size: clamp(1.85rem, 6.8vw, 2.75rem) !important;
+        letter-spacing: -0.5px !important;
+        line-height: 1.15 !important;
+      }
+      .hero-sub {
+        font-size: 0.92rem !important;
+        margin: 16px auto 26px !important;
+        line-height: 1.6 !important;
+        padding: 0 4px !important;
+      }
+      .hero-actions {
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 320px !important;
+        margin: 0 auto !important;
+        gap: 10px !important;
+      }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-secondary {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 12px 20px !important;
+        font-size: 0.9rem !important;
+        border-radius: 10px !important;
+      }
+      .stats-strip {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+        margin-top: 32px !important;
+        width: 100% !important;
+        max-width: 440px !important;
+      }
+      .stat-chip {
+        min-width: unset !important;
+        padding: 10px 4px !important;
+        border-radius: 10px !important;
+      }
+      .stat-num {
+        font-size: 1.22rem !important;
+      }
+      .stat-label {
+        font-size: 0.62rem !important;
+        letter-spacing: 0.1px !important;
+        margin-top: 2px !important;
+      }
+      .section-title {
+        font-size: clamp(1.45rem, 5vw, 2.1rem) !important;
+        margin-bottom: 10px !important;
+        line-height: 1.25 !important;
+      }
+      .section-desc {
+        font-size: 0.88rem !important;
+        line-height: 1.6 !important;
+        margin-bottom: 28px !important;
+        padding: 0 4px !important;
+      }
+      .features-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+      }
+      .feat-card {
+        padding: 18px 16px !important;
+        border-radius: 14px !important;
+      }
+      .feat-icon {
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 10px !important;
+        font-size: 1.25rem !important;
+        margin-bottom: 12px !important;
+      }
+      .feat-title {
+        font-size: 1rem !important;
+        margin-bottom: 6px !important;
+      }
+      .feat-desc {
+        font-size: 0.85rem !important;
+        line-height: 1.55 !important;
+      }
+      .feat-tags {
+        margin-top: 12px !important;
+        gap: 5px !important;
+      }
+      .feat-tag {
+        font-size: 0.66rem !important;
+        padding: 2px 8px !important;
+      }
+      .dual-col {
+        grid-template-columns: 1fr !important;
+        gap: 28px !important;
+      }
+      .proto-showcase {
+        gap: 6px !important;
+        margin-bottom: 20px !important;
+      }
+      .proto-pill {
+        font-size: 0.74rem !important;
+        padding: 5px 10px !important;
+      }
+      .checklist li {
+        font-size: 0.85rem !important;
+        gap: 10px !important;
+      }
+      .video-mock-content .video-drone {
+        font-size: 2.2rem !important;
+      }
+      .video-fps-badge {
+        font-size: 0.68rem !important;
+        padding: 3px 8px !important;
+        margin-top: 6px !important;
+      }
+      .terminal-body {
+        padding: 12px 14px !important;
+        font-size: 0.70rem !important;
+        line-height: 1.55 !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      .terminal-body .t-line {
+        font-size: 0.70rem !important;
+        word-break: break-word !important;
+      }
+      .dvr-metrics-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+      }
+      .dvr-metric-card {
+        padding: 10px 4px !important;
+        border-radius: 10px !important;
+      }
+      .dvr-metric-val {
+        font-size: 1.15rem !important;
+      }
+      .dvr-metric-lbl {
+        font-size: 0.60rem !important;
+        line-height: 1.2 !important;
+      }
+      .gallery-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+      .manuals-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        margin-top: 20px !important;
+      }
+      .manual-card {
+        padding: 18px 16px !important;
+      }
+      .manual-lang-badge {
+        position: static !important;
+        display: inline-block !important;
+        margin-bottom: 10px !important;
+        width: fit-content !important;
+      }
+      .manual-callout-box {
+        padding: 14px 16px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        align-items: center !important;
+        gap: 12px !important;
+      }
+      .protocol-row {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+      .proto-card {
+        padding: 14px 8px !important;
+        border-radius: 12px !important;
+      }
+      .proto-icon {
+        font-size: 1.45rem !important;
+        margin-bottom: 4px !important;
+      }
+      .proto-name {
+        font-size: 0.80rem !important;
+      }
+      .proto-desc {
+        font-size: 0.68rem !important;
+        line-height: 1.35 !important;
+      }
+      .pricing-grid {
+        grid-template-columns: 1fr !important;
+        max-width: 340px !important;
+        gap: 18px !important;
+      }
+      .price-card {
+        padding: 24px 18px !important;
+        border-radius: 16px !important;
+      }
+      .price-amount {
+        font-size: 2.1rem !important;
+      }
+      .testi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+      }
+      .cta-glow-box {
+        padding: 32px 16px !important;
+        border-radius: 18px !important;
+      }
+      .cta-glow-box h2 {
+        font-size: 1.55rem !important;
+      }
+      .cta-glow-box p {
+        font-size: 0.88rem !important;
+        margin-bottom: 22px !important;
+      }
+      footer {
+        padding: 28px 16px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 16px !important;
+      }
+      .footer-brand {
+        justify-content: center !important;
+      }
+      .footer-links {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 8px 14px !important;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .stats-strip {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      .dvr-metrics-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+      .nav-wordmark {
+        font-size: 0.95rem !important;
+        letter-spacing: 1px !important;
+      }
+      .nav-logo {
+        width: 32px !important;
+        height: 32px !important;
+      }
+      .nav-tagline {
+        display: none !important;
+      }
+      .hero h1 {
+        font-size: 1.65rem !important;
+      }
+      .protocol-row {
+        grid-template-columns: 1fr 1fr !important;
+      }
+    }
   </style>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -736,7 +1221,32 @@
     <li><a href="#downloads">📖 Manuals</a></li>
     <li><a class="nav-cta" href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Team%2C%20I%20am%20interested%20in%20MundoStreamer%20PRO%20License" target="_blank" style="color:#25d366!important;border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.1);">💬 WhatsApp Support</a></li>
   </ul>
+  <!-- Mobile Actions -->
+  <div class="nav-mobile-right">
+    <a href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Team%2C%20I%20am%20interested%20in%20MundoStreamer%20PRO%20License" target="_blank" class="nav-mobile-cta" title="WhatsApp Support">💬 WA</a>
+    <button class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle Navigation Menu">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+  </div>
 </nav>
+
+<!-- Mobile Navigation Drawer -->
+<div class="nav-mobile-drawer" id="navMobileDrawer">
+  <div class="nav-mobile-drawer-inner">
+    <a href="#features" class="nav-mobile-link">✦ Features</a>
+    <a href="#streaming" class="nav-mobile-link">📡 Streaming Protocols</a>
+    <a href="#dvr" class="nav-mobile-link">🎬 DVR &amp; Recording</a>
+    <a href="#specs" class="nav-mobile-link">⚙️ Technical Specs</a>
+    <a href="#pricing" class="nav-mobile-link">💎 Pricing &amp; License</a>
+    <a href="#gallery" class="nav-mobile-link">🖥️ UI Tour &amp; Dashboard</a>
+    <a href="#downloads" class="nav-mobile-link">📚 User Manuals (ID/EN/CN)</a>
+    <a href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Team%2C%20I%20am%20interested%20in%20MundoStreamer%20PRO%20License" target="_blank" class="nav-mobile-wa-btn">
+      💬 Contact WhatsApp Support (+62 856-4722-9919)
+    </a>
+  </div>
+</div>
 
 <!-- ══════════ HERO ══════════ -->
 <section class="hero" style="max-width:100%;padding-top:100px;">
@@ -753,7 +1263,7 @@
     <div class="line-magenta">Stream to the World.</div>
   </h1>
   <p class="hero-sub">
-    MundoStreamer transforms your Radxa ROCK 3A or Raspberry Pi 4B into a professional-grade FPV ground station —
+    MundoStreamer transforms your <strong>Radxa ROCK 3A</strong> or <strong>Raspberry Pi 4B</strong> into a professional-grade FPV ground station —
     with crystal-clear 1080p60 recording, sub-100ms live streaming, and a sleek web dashboard
     accessible from any device on your network.
   </p>
@@ -777,6 +1287,10 @@
     <div class="stat-chip">
       <div class="stat-num">&lt;100ms</div>
       <div class="stat-label">RTSP Latency</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-num">2-in-1</div>
+      <div class="stat-label">ROCK 3A + Pi 4B</div>
     </div>
     <div class="stat-chip">
       <div class="stat-num">1080p</div>
@@ -881,15 +1395,15 @@
 
     <div class="feat-card cyan reveal reveal-delay-3">
       <div class="feat-icon icon-cyan">🛡️</div>
-      <div class="feat-title">OTA Updates &amp; Auto Rollback</div>
+      <div class="feat-title">5-Layer Enterprise Security &amp; .msuf OTA</div>
       <p class="feat-desc">
-        Seamlessly update MundoStreamer via the web dashboard. Automatic snapshot backup
-        before every update — one-click rollback if anything goes wrong. Your system is always safe.
+        Hardware-bound Ed25519 licensing with stripped native ARM64 ELF binaries, Sentinel gatekeeper with barcode lockscreen,
+        tamper-proof encrypted .msuf updates, and persistent read-only (/ro) OverlayFS partition for 100% power-cut resilience.
       </p>
       <div class="feat-tags">
-        <span class="feat-tag tag-cyan">OTA Update</span>
-        <span class="feat-tag tag-green">Auto Backup</span>
-        <span class="feat-tag tag-magenta">1-Click Rollback</span>
+        <span class="feat-tag tag-cyan">5-Layer Security</span>
+        <span class="feat-tag tag-green">.msuf Signed OTA</span>
+        <span class="feat-tag tag-magenta">Read-Only Rootfs</span>
       </div>
     </div>
 
@@ -1075,27 +1589,29 @@
           <div class="demo-title">MundoStreamer Ground Station — Telemetry &amp; DVR Engine</div>
         </div>
         <div class="terminal-body" style="font-family:'Courier New', monospace; font-size:0.80rem; line-height:1.6; padding:16px;">
-          <div class="t-line"><span style="color:#00f0ff;font-weight:700;">● HOST SYSTEM: Rockchip RK3568 (ROCK 3A) or BCM2711 (Pi 4B) Quad-Core ARM Cortex-A55 @ 2.0 GHz · Mali-G52 GPU</span></div>
+          <div class="t-line"><span style="color:#00f0ff;font-weight:700;">● HOST SYSTEM:</span> <span class="t-out">Radxa ROCK 3A · Rockchip RK3568 Quad-Core ARM Cortex-A55 @ 2.0 GHz · Mali-G52 GPU</span></div>
           <div class="t-line"><span style="color:#00ff9d;font-weight:700;">● HDMI OUTPUT:</span> <span class="t-out">Direct KMS Hardware Plane · </span><span style="color:#00ff9d;font-weight:700;">1080p @ 60.00 FPS</span><span class="t-out"> · Zero Tearing · V-Sync Locked</span></div>
           <div class="t-line"><span style="color:#ffb800;font-weight:700;">● FLIGHT DVR:</span> <span class="t-out">H.265 (HEVC) MP4 FastStart · </span><span style="color:#00f0ff;">25.0 Mbps</span><span class="t-out"> · Zero Frame Drops · Auto Arm/Disarm</span></div>
           <div class="t-line"><span style="color:#a855f7;font-weight:700;">● INSTANT REPLAY:</span> <span class="t-out">HDMI Symlink Direct Replay · Zero Goggles USB Disconnect · Live Flight Priority</span></div>
           <div class="t-line"><span style="color:#ff007f;font-weight:700;">● BROADCAST:</span> <span class="t-out">NDI Source (MundoStreamer-FPV) · WebRTC (&lt;150ms) · RTSP Server (Port 8554)</span></div>
           <div class="t-line"><span style="color:#00f0ff;font-weight:700;">● AUDIO PIPELINE:</span> <span class="t-out">3.5mm TRRS Commentator Mic (RK809 Codec) Mixed at 48kHz AAC Stereo</span></div>
+          <div class="t-line"><span style="color:#00ff9d;font-weight:700;">● SECURITY ENGINE:</span> <span class="t-out">5-Layer Enterprise Hardening · Ed25519 Hardware-Bound · Native ARM64 ELF Stripped</span></div>
+          <div class="t-line"><span style="color:#ffb800;font-weight:700;">● STORAGE INTEGRITY:</span> <span class="t-out">Persistent Read-Only (/ro) OverlayFS · Power-Cut Resilient · 579 MB Golden Master</span></div>
           <div class="t-line"><span style="color:#00ff9d;font-weight:700;">● TELEMETRY:</span> <span class="t-out">SoC Core Temp </span><span style="color:#00ff9d;font-weight:700;">52°C</span><span class="t-out"> · CPU Load 18% · RAM 3.2GB Free · Status: </span><span style="color:#00ff9d;font-weight:700;">OPTIMAL</span></div>
         </div>
       </div>
-      <div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        <div style="text-align:center;padding:14px;background:var(--bg-card);border:1px solid rgba(0,255,157,0.2);border-radius:12px;">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--green);">60.00</div>
-          <div style="font-size:0.68rem;color:var(--text-muted);">HDMI Output FPS</div>
+      <div class="dvr-metrics-grid">
+        <div class="dvr-metric-card" style="border-color:rgba(0,255,157,0.2);">
+          <div class="dvr-metric-val" style="color:var(--green);">60.00</div>
+          <div class="dvr-metric-lbl">HDMI Output FPS</div>
         </div>
-        <div style="text-align:center;padding:14px;background:var(--bg-card);border:1px solid rgba(0,240,255,0.2);border-radius:12px;">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--cyan);">H.265</div>
-          <div style="font-size:0.68rem;color:var(--text-muted);">Full HD DVR FastStart</div>
+        <div class="dvr-metric-card" style="border-color:rgba(0,240,255,0.2);">
+          <div class="dvr-metric-val" style="color:var(--cyan);">H.265</div>
+          <div class="dvr-metric-lbl">Full HD DVR FastStart</div>
         </div>
-        <div style="text-align:center;padding:14px;background:var(--bg-card);border:1px solid rgba(255,184,0,0.2);border-radius:12px;">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--amber);">0</div>
-          <div style="font-size:0.68rem;color:var(--text-muted);">Frames Dropped</div>
+        <div class="dvr-metric-card" style="border-color:rgba(255,184,0,0.2);">
+          <div class="dvr-metric-val" style="color:var(--amber);">0</div>
+          <div class="dvr-metric-lbl">Frames Dropped</div>
         </div>
       </div>
     </div>
@@ -1116,7 +1632,7 @@
     </p>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:24px;">
+  <div class="gallery-grid">
     <div class="feat-card cyan reveal reveal-delay-1" style="padding:16px;">
       <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.2);margin-bottom:14px;">
         <img src="assets/streaming.png" alt="Streaming Control" style="width:100%;height:auto;display:block;border-radius:10px;">
@@ -1138,7 +1654,7 @@
         <img src="assets/display.png" alt="HDMI Display" style="width:100%;height:auto;display:block;border-radius:10px;">
       </div>
       <div class="feat-title">📺 Direct DRM/KMS HDMI & Display</div>
-      <p class="feat-desc">Hardware accelerated 60 FPS pacing, aspect ratio scaling, dynamic dewarp correction, and standby loops.</p>
+      <p class="feat-desc">Hardware-accelerated 60 FPS pacing, clean standby loop without pairing QR codes, aspect ratio scaling, and dynamic dewarp.</p>
     </div>
 
     <div class="feat-card purple reveal reveal-delay-1" style="padding:16px;">
@@ -1167,33 +1683,34 @@
     <div class="section-badge badge-green">📚 Official Documentation</div>
     <h2 class="section-title">Download MundoStreamer User Manual</h2>
     <p class="section-desc">
-      Comprehensive 15-page field operational guide complete with high-resolution Web UI screenshots,
-      hardware port mapping, instant HDMI replay instructions, audio setup, and troubleshooting matrices.
+      Comprehensive 16-page field operational guide complete with high-resolution Web UI screenshots,
+      hardware port mapping, instant HDMI replay instructions, 5-layer enterprise security, audio setup, and troubleshooting matrices.
       Available in 3 languages.
     </p>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:24px;margin-top:32px;">
+  <div class="manuals-grid">
     <!-- Indonesian Card -->
-    <div class="feat-card green reveal reveal-delay-1" style="display:flex;flex-direction:column;justify-content:space-between;padding:24px;border:1px solid rgba(0,255,157,0.3);position:relative;">
-      <div style="position:absolute;top:16px;right:16px;background:rgba(0,255,157,0.15);color:var(--green);border:1px solid rgba(0,255,157,0.3);padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:800;letter-spacing:1px;">
+    <div class="feat-card manual-card green reveal reveal-delay-1" style="border:1px solid rgba(0,255,157,0.3);">
+      <div class="manual-lang-badge" style="background:rgba(0,255,157,0.15);color:var(--green);border:1px solid rgba(0,255,157,0.3);">
         🇮🇩 INDONESIAN
       </div>
       <div>
         <div style="font-size:2.2rem;margin-bottom:10px;">🇮🇩</div>
         <div class="feat-title" style="font-size:1.25rem;margin-bottom:6px;">Panduan Pengguna Resmi</div>
         <div style="font-size:0.8rem;color:var(--cyan);font-weight:700;margin-bottom:14px;">
-          Bahasa Indonesia · v2.4.0 · 15 Halaman · 5.6 MB PDF
+          Bahasa Indonesia · v2.4.0 Hardened Edition · 16 Halaman · 7.7 MB PDF
         </div>
         <p class="feat-desc" style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
           Panduan lengkap berbahasa Indonesia dengan tangkapan layar seluruh 10 tab Web UI.
-          Memuat panduan koneksi cepat 2 menit, peta port Radxa ROCK 3A, rekam DVR H.265,
-          fitur replay instan HDMI, dan nomor WhatsApp teknisi resmi.
+          Memuat panduan koneksi cepat 2 menit, peta port Radxa ROCK 3A, proteksi 5 lapis enterprise,
+          update .msuf, rekam DVR H.265, fitur replay instan HDMI, dan nomor WhatsApp teknisi resmi.
         </p>
         <ul style="list-style:none;padding:0;margin:0 0 20px 0;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;color:var(--text-muted);">
           <li><span style="color:var(--green);font-weight:bold;">✓</span> 12+ Tangkapan Layar Web UI Asli</li>
           <li><span style="color:var(--green);font-weight:bold;">✓</span> Panduan Saklar Fisik OTG &amp; Port I/O</li>
           <li><span style="color:var(--green);font-weight:bold;">✓</span> Tutorial Streaming OBS &amp; Replay HDMI</li>
+          <li><span style="color:var(--green);font-weight:bold;">✓</span> Proteksi 5 Lapis &amp; Update OTA (.msuf)</li>
           <li><span style="color:var(--green);font-weight:bold;">✓</span> Kontak WhatsApp Layanan Pelanggan</li>
         </ul>
       </div>
@@ -1203,26 +1720,27 @@
     </div>
 
     <!-- English Card -->
-    <div class="feat-card cyan reveal reveal-delay-2" style="display:flex;flex-direction:column;justify-content:space-between;padding:24px;border:1px solid rgba(0,240,255,0.35);box-shadow:0 0 30px rgba(0,240,255,0.1);position:relative;">
-      <div style="position:absolute;top:16px;right:16px;background:rgba(0,240,255,0.15);color:var(--cyan);border:1px solid rgba(0,240,255,0.3);padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:800;letter-spacing:1px;">
+    <div class="feat-card manual-card cyan reveal reveal-delay-2" style="border:1px solid rgba(0,240,255,0.35);box-shadow:0 0 30px rgba(0,240,255,0.1);">
+      <div class="manual-lang-badge" style="background:rgba(0,240,255,0.15);color:var(--cyan);border:1px solid rgba(0,240,255,0.3);">
         🇬🇧 ENGLISH PRO
       </div>
       <div>
         <div style="font-size:2.2rem;margin-bottom:10px;">🇬🇧</div>
         <div class="feat-title" style="font-size:1.25rem;margin-bottom:6px;">Official User Manual</div>
         <div style="font-size:0.8rem;color:var(--cyan);font-weight:700;margin-bottom:14px;">
-          English Edition · v2.4.0 PRO · 15 Pages · 5.6 MB PDF
+          English Edition · v2.4.0 Hardened Edition · 16 Pages · 7.7 MB PDF
         </div>
         <p class="feat-desc" style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
           Comprehensive international field operations manual. Features full hardware topology,
-          2-minute rapid deployment steps, WebRTC &amp; NDI production broadcast workflows,
-          instant HDMI zero-disconnect replay, and complete troubleshooting matrices.
+          2-minute rapid deployment steps, 5-layer enterprise security architecture, .msuf cryptographic updates,
+          WebRTC &amp; NDI broadcast workflows, instant HDMI replay, and complete troubleshooting matrices.
         </p>
         <ul style="list-style:none;padding:0;margin:0 0 20px 0;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;color:var(--text-muted);">
           <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Full HD Web Dashboard Screenshots</li>
           <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Radxa ROCK 3A &amp; Hardware I/O Pinout</li>
           <li><span style="color:var(--cyan);font-weight:bold;">✓</span> OBS Studio, vMix &amp; NDI Setup Guide</li>
-          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Cryptographic Machine ID &amp; Licensing</li>
+          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> 5-Layer Security Architecture &amp; .msuf OTA</li>
+          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Machine ID &amp; Priority WhatsApp Support</li>
         </ul>
       </div>
       <a href="downloads/MundoStreamer_User_Manual_EN.pdf" download="MundoStreamer_User_Manual_EN.pdf" class="btn-primary" style="text-align:center;text-decoration:none;display:block;">
@@ -1231,8 +1749,8 @@
     </div>
 
     <!-- Chinese Card -->
-    <div class="feat-card magenta reveal reveal-delay-3" style="display:flex;flex-direction:column;justify-content:space-between;padding:24px;border:1px solid rgba(255,0,127,0.3);position:relative;">
-      <div style="position:absolute;top:16px;right:16px;background:rgba(255,0,127,0.15);color:var(--magenta);border:1px solid rgba(255,0,127,0.3);padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:800;letter-spacing:1px;">
+    <div class="feat-card manual-card magenta reveal reveal-delay-3" style="border:1px solid rgba(255,0,127,0.3);">
+      <div class="manual-lang-badge" style="background:rgba(255,0,127,0.15);color:var(--magenta);border:1px solid rgba(255,0,127,0.3);">
         🇨🇳 SIMPLIFIED CHINESE
       </div>
       <div>
@@ -1259,7 +1777,7 @@
     </div>
   </div>
 
-  <div style="margin-top:28px;padding:18px 24px;background:rgba(0,240,255,0.04);border:1px solid rgba(0,240,255,0.18);border-radius:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+  <div class="manual-callout-box">
     <div style="display:flex;align-items:center;gap:12px;">
       <span style="font-size:1.6rem;">⚡</span>
       <div>
@@ -1281,18 +1799,22 @@
 <section id="specs">
   <div class="section-center reveal">
     <div class="section-badge badge-purple">⚙️ Technical Specs</div>
-    <h2 class="section-title">Built on Proven Hardware &amp; Software</h2>
+    <h2 class="section-title">Built for Two Proven Platforms</h2>
     <p class="section-desc">
-      MundoStreamer is engineered for peak tournament reliability — powered by the 
-      Radxa ROCK 3A (RK3568) or Raspberry Pi 4B (BCM2711) platform.
+      MundoStreamer runs natively on two battle-tested single-board computers — 
+      the Radxa ROCK 3A (RK3568) and Raspberry Pi 4B (BCM2711). Pick the hardware that fits your mission.
     </p>
   </div>
   <div class="protocol-row reveal reveal-delay-1">
     <div class="proto-card">
       <div class="proto-icon">⚡</div>
-      <div class="proto-name">⚡ Radxa ROCK 3A</div>
-      <div class="proto-name">🍓 Raspberry Pi 4B</div>
-      <div class="proto-desc">RK3568 Quad-Core A55 @ 2.0GHz · Mali-G52 GPU · Dedicated VPU</div>
+      <div class="proto-name">Radxa ROCK 3A</div>
+      <div class="proto-desc">RK3568 Quad-Core A55 @ 2.0GHz · Mali-G52 GPU · Dedicated VPU · <strong style="color:var(--cyan);">RECOMMENDED</strong></div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">🍓</div>
+      <div class="proto-name">Raspberry Pi 4B</div>
+      <div class="proto-desc">BCM2711 Quad-Core Cortex-A72 @ 1.5GHz · VideoCore VI GPU · Broadcom SoC</div>
     </div>
     <div class="proto-card">
       <div class="proto-icon">🎮</div>
@@ -1307,12 +1829,17 @@
     <div class="proto-card">
       <div class="proto-icon">📺</div>
       <div class="proto-name">Direct KMS Plane</div>
-      <div class="proto-desc">Debian 12 Bookworm · Direct hardware plane rendering · 60.00 Hz V-Sync</div>
+      <div class="proto-desc">Debian 12 Bookworm (ROCK 3A) · Raspberry Pi OS (Pi 4B) · Direct KMS plane · 60.00 Hz V-Sync</div>
     </div>
     <div class="proto-card">
       <div class="proto-icon">🔒</div>
-      <div class="proto-name">Ed25519 V2 Machine Lock</div>
-      <div class="proto-desc">Hardware-bound · Silicon serial locked · Offline verification</div>
+      <div class="proto-name">5-Layer Enterprise Security</div>
+      <div class="proto-desc">Ed25519 Hardware-Bound · Stripped ARM64 ELF · Sentinel Lockscreen · Signed .msuf OTA · Read-Only (/ro) OverlayFS</div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">💾</div>
+      <div class="proto-name">579 MB Golden Master</div>
+      <div class="proto-desc">Ultra-compact, stripped Debian 12 Bookworm image · Instant flashing &amp; auto-partition resize</div>
     </div>
     <div class="proto-card">
       <div class="proto-icon">🌡️</div>
@@ -1336,7 +1863,7 @@
       <div class="testi-stars">★★★★★</div>
       <p class="testi-text">
         "I used to spend hours post-processing DVR footage. With MundoStreamer, everything comes out
-        web-ready and perfectly color-graded. The HDMI display is the smoothest I.ve ever seen on an FPV ground station."
+        web-ready and perfectly color-graded. The HDMI display is the smoothest I've ever seen on an FPV ground station."
       </p>
       <div class="testi-author">
         <div class="testi-avatar" style="background:rgba(0,240,255,0.15);">🎯</div>
@@ -1502,6 +2029,31 @@
       }
     });
   });
+
+  // Mobile navigation drawer toggle & auto-close
+  const navMobileToggle = document.getElementById('navMobileToggle');
+  const navMobileDrawer = document.getElementById('navMobileDrawer');
+  if (navMobileToggle && navMobileDrawer) {
+    navMobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = navMobileDrawer.classList.toggle('open');
+      navMobileToggle.classList.toggle('active', isOpen);
+    });
+    // Auto-close drawer on link click
+    document.querySelectorAll('.nav-mobile-link, .nav-mobile-wa-btn').forEach(link => {
+      link.addEventListener('click', () => {
+        navMobileDrawer.classList.remove('open');
+        navMobileToggle.classList.remove('active');
+      });
+    });
+    // Auto-close on click outside
+    document.addEventListener('click', (e) => {
+      if (!navMobileDrawer.contains(e.target) && !navMobileToggle.contains(e.target)) {
+        navMobileDrawer.classList.remove('open');
+        navMobileToggle.classList.remove('active');
+      }
+    });
+  }
 
   // Animated counter for stats
   function animateCount(el, target, suffix='', duration=1200) {
