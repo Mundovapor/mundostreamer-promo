@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MundoStreamer — Professional FPV Ground Station</title>
+  <meta name="description" content="The ultimate FPV ground station solution. Crystal-clear 1080p@60fps recording, ultra-low latency streaming, direct HDMI 60Hz display, and professional DVR — powered by Radxa ROCK 3A or Raspberry Pi 4B (Rockchip RK3568 & BCM2711).">
+  <style>
+    :root {
+      --bg-base: #06090e;
+      --bg-card: rgba(13, 20, 32, 0.88);
+      --bg-card2: rgba(8, 14, 26, 0.92);
+      --border-card: rgba(0, 240, 255, 0.18);
+      --cyan: #00f0ff;
+      --magenta: #ff007f;
+      --green: #00ff9d;
+      --amber: #ffb800;
+      --purple: #a855f7;
+      --text-main: #e6f1ff;
+      --text-muted: #7b90aa;
+      --text-dim: #4a5f75;
+      --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      --glow-cyan: 0 0 20px rgba(0, 240, 255, 0.4);
+      --glow-magenta: 0 0 20px rgba(255, 0, 127, 0.4);
+      --glow-green: 0 0 20px rgba(0, 255, 157, 0.4);
+    }
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ──────────── ANIMATED BACKGROUND ──────────── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: -3; pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0,240,255,0.07) 0%, transparent 55%),
+                  radial-gradient(ellipse 70% 50% at 80% 80%, rgba(255,0,127,0.07) 0%, transparent 55%),
+                  radial-gradient(ellipse 50% 40% at 50% 50%, rgba(168,85,247,0.04) 0%, transparent 60%);
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .bg-grid::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, var(--bg-base) 0%, transparent 10%, transparent 90%, var(--bg-base) 100%);
+    }
+
+    /* ──────────── NAV ──────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(6, 9, 14, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.14);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: inherit;
+    }
+    .nav-logo {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      border: 1.5px solid var(--cyan);
+      box-shadow: var(--glow-cyan);
+      object-fit: contain;
+      background: rgba(6,9,14,0.7);
+    }
+    .nav-logo-fallback {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid var(--cyan);
+      box-shadow: var(--glow-cyan);
+      background: linear-gradient(135deg, #00f0ff22, #ff007f22);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .nav-wordmark {
+      font-size: 1.1rem; font-weight: 900;
+      letter-spacing: 2px; text-transform: uppercase;
+      background: linear-gradient(90deg, #00f0ff, #fff 50%, #ff007f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-tagline {
+      font-size: 0.65rem; color: var(--text-muted);
+      letter-spacing: 0.5px; margin-top: 1px;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.85rem; font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: var(--transition);
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px; border-radius: 8px;
+      background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(255,0,127,0.10));
+      border: 1px solid rgba(0,240,255,0.35);
+      color: var(--cyan) !important;
+      font-weight: 700 !important;
+      font-size: 0.82rem !important;
+      letter-spacing: 0.5px;
+      transition: var(--transition);
+    }
+    .nav-cta:hover {
+      background: linear-gradient(135deg, rgba(0,240,255,0.25), rgba(255,0,127,0.18)) !important;
+      box-shadow: var(--glow-cyan);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+      nav { padding: 12px 18px; }
+    }
+
+    /* ──────────── HERO ──────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+    }
+    .hero-logo-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-logo-img {
+      width: 140px;
+      height: 140px;
+      border-radius: 28px;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 35px rgba(0,240,255,0.45), 0 0 70px rgba(255,0,127,0.25);
+      background: rgba(6, 9, 14, 0.9);
+      object-fit: contain;
+      padding: 6px;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .hero-logo-img:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 0 50px rgba(0,240,255,0.7), 0 0 90px rgba(255,0,127,0.4);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 16px; border-radius: 30px;
+      font-size: 0.74rem; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.28);
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 1.5s infinite;
+    }
+    .hero h1 {
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -1px;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    .hero h1 .line-cyan {
+      background: linear-gradient(90deg, #00f0ff, #a0f8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero h1 .line-white { color: #fff; }
+    .hero h1 .line-magenta {
+      background: linear-gradient(90deg, #ff007f, #ff66aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      max-width: 600px;
+      font-size: clamp(1rem, 2.5vw, 1.22rem);
+      color: var(--text-muted); line-height: 1.7;
+      margin: 24px auto 40px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+    .hero-actions {
+      display: flex; flex-wrap: wrap; gap: 14px;
+      justify-content: center;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 1rem; font-weight: 800; letter-spacing: 0.5px;
+      text-decoration: none;
+      background: linear-gradient(135deg, #00f0ff, #00aacc);
+      color: #020811;
+      border: none; cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 24px rgba(0,240,255,0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 40px rgba(0,240,255,0.55);
+    }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 1rem; font-weight: 700;
+      text-decoration: none; color: var(--text-main);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: var(--transition);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(0,240,255,0.35);
+      transform: translateY(-3px);
+    }
+
+    /* ──────────── STAT STRIP ──────────── */
+    .stats-strip {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+      margin-top: 60px;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    .stat-chip {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 18px 28px; border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      min-width: 120px;
+      transition: var(--transition);
+    }
+    .stat-chip:hover {
+      border-color: rgba(0,240,255,0.4);
+      transform: translateY(-3px);
+      box-shadow: var(--glow-cyan);
+    }
+    .stat-num {
+      font-size: 1.7rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.5px; }
+
+    /* ──────────── SECTION COMMON ──────────── */
+    section {
+      padding: 100px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 4px 14px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .badge-cyan { color: var(--cyan); background: rgba(0,240,255,0.08); border: 1px solid rgba(0,240,255,0.25); }
+    .badge-magenta { color: var(--magenta); background: rgba(255,0,127,0.08); border: 1px solid rgba(255,0,127,0.25); }
+    .badge-green { color: var(--green); background: rgba(0,255,157,0.08); border: 1px solid rgba(0,255,157,0.25); }
+    .badge-purple { color: var(--purple); background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); }
+    .badge-amber { color: var(--amber); background: rgba(255,184,0,0.08); border: 1px solid rgba(255,184,0,0.25); }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900; line-height: 1.2; letter-spacing: -0.5px;
+      margin-bottom: 16px;
+    }
+    .section-title em { font-style: normal; }
+    .section-desc {
+      font-size: 1.05rem; color: var(--text-muted); line-height: 1.7;
+      max-width: 560px; margin-bottom: 48px;
+    }
+
+    /* ──────────── FEATURES GRID ──────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .feat-card {
+      position: relative; overflow: hidden;
+      padding: 28px; border-radius: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      transition: var(--transition);
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      opacity: 0; transition: var(--transition);
+    }
+    .feat-card:hover { transform: translateY(-5px); }
+    .feat-card.cyan:hover { border-color: rgba(0,240,255,0.45); box-shadow: 0 8px 40px rgba(0,240,255,0.12); }
+    .feat-card.cyan::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+    .feat-card.cyan:hover::before { opacity: 1; }
+    .feat-card.magenta:hover { border-color: rgba(255,0,127,0.45); box-shadow: 0 8px 40px rgba(255,0,127,0.12); }
+    .feat-card.magenta::before { background: linear-gradient(90deg, var(--magenta), transparent); }
+    .feat-card.magenta:hover::before { opacity: 1; }
+    .feat-card.green:hover { border-color: rgba(0,255,157,0.45); box-shadow: 0 8px 40px rgba(0,255,157,0.12); }
+    .feat-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+    .feat-card.green:hover::before { opacity: 1; }
+    .feat-card.amber:hover { border-color: rgba(255,184,0,0.45); box-shadow: 0 8px 40px rgba(255,184,0,0.12); }
+    .feat-card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+    .feat-card.amber:hover::before { opacity: 1; }
+    .feat-card.purple:hover { border-color: rgba(168,85,247,0.45); box-shadow: 0 8px 40px rgba(168,85,247,0.12); }
+    .feat-card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+    .feat-card.purple:hover::before { opacity: 1; }
+
+    .feat-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 18px;
+    }
+    .icon-cyan { background: rgba(0,240,255,0.12); border: 1px solid rgba(0,240,255,0.25); }
+    .icon-magenta { background: rgba(255,0,127,0.12); border: 1px solid rgba(255,0,127,0.25); }
+    .icon-green { background: rgba(0,255,157,0.12); border: 1px solid rgba(0,255,157,0.25); }
+    .icon-amber { background: rgba(255,184,0,0.12); border: 1px solid rgba(255,184,0,0.25); }
+    .icon-purple { background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.25); }
+
+    .feat-title {
+      font-size: 1.08rem; font-weight: 800; margin-bottom: 10px;
+    }
+    .feat-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; }
+    .feat-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+    .feat-tag {
+      padding: 3px 10px; border-radius: 6px;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .tag-cyan { background: rgba(0,240,255,0.1); color: var(--cyan); border: 1px solid rgba(0,240,255,0.2); }
+    .tag-green { background: rgba(0,255,157,0.1); color: var(--green); border: 1px solid rgba(0,255,157,0.2); }
+    .tag-magenta { background: rgba(255,0,127,0.1); color: var(--magenta); border: 1px solid rgba(255,0,127,0.2); }
+    .tag-amber { background: rgba(255,184,0,0.1); color: var(--amber); border: 1px solid rgba(255,184,0,0.2); }
+    .tag-purple { background: rgba(168,85,247,0.1); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
+
+    /* ──────────── PROTOCOL SHOWCASE ──────────── */
+    .protocol-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .proto-card {
+      padding: 22px 18px; border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      text-align: center;
+      transition: var(--transition);
+    }
+    .proto-card:hover {
+      border-color: rgba(0,240,255,0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,240,255,0.10);
+    }
+    .proto-icon { font-size: 2rem; margin-bottom: 10px; }
+    .proto-name {
+      font-size: 0.9rem; font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .proto-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 5px; }
+
+    /* ──────────── DUAL-COL LAYOUT ──────────── */
+    .dual-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+    }
+    @media (max-width: 760px) { .dual-col { grid-template-columns: 1fr; gap: 40px; } }
+    .dual-col.reverse { direction: rtl; }
+    .dual-col.reverse > * { direction: ltr; }
+
+    .demo-screen {
+      border-radius: 18px;
+      background: var(--bg-card2);
+      border: 1px solid rgba(0,240,255,0.2);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 60px rgba(0,240,255,0.07);
+    }
+    .demo-bar {
+      background: rgba(6,9,14,0.95);
+      border-bottom: 1px solid rgba(0,240,255,0.14);
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .demo-title {
+      font-size: 0.72rem; color: var(--text-muted);
+      letter-spacing: 0.5px; margin-left: 4px;
+      font-weight: 600;
+    }
+    .demo-body { padding: 20px; }
+
+    /* ──────────── LIVE VIDEO MOCKUP ──────────── */
+    .video-mock {
+      aspect-ratio: 16/9;
+      background: linear-gradient(160deg, #0a1420 0%, #050b14 100%);
+      border-radius: 14px; overflow: hidden;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(0,240,255,0.15);
+    }
+    .video-mock-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,240,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,240,255,0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .video-mock-content {
+      position: relative; z-index: 1;
+      text-align: center;
+    }
+    .video-drone { font-size: 3.5rem; filter: drop-shadow(0 0 20px rgba(0,240,255,0.6)); animation: float 3s ease-in-out infinite; }
+    .video-fps-badge {
+      display: inline-block; margin-top: 12px;
+      padding: 4px 12px; border-radius: 6px;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;
+      background: rgba(0,240,255,0.15); color: var(--cyan);
+      border: 1px solid rgba(0,240,255,0.3);
+    }
+    .video-overlay-hud {
+      position: absolute; top: 10px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .hud-item {
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    }
+    .hud-live { color: var(--magenta); border: 1px solid rgba(255,0,127,0.3); }
+    .hud-res { color: var(--green); border: 1px solid rgba(0,255,157,0.3); }
+    .hud-fps { color: var(--cyan); border: 1px solid rgba(0,240,255,0.3); }
+    .hud-rec {
+      position: absolute; bottom: 10px; left: 10px;
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 0.68rem; font-weight: 700;
+      background: rgba(255,0,0,0.2); color: #ff4444;
+      border: 1px solid rgba(255,0,0,0.35);
+    }
+    .hud-rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff4444; animation: pulse 1s infinite; }
+
+    /* ──────────── CHECKLIST ──────────── */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 0.95rem; line-height: 1.5; color: var(--text-muted);
+    }
+    .check-icon {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; margin-top: 1px;
+    }
+    .ci-cyan { background: rgba(0,240,255,0.15); color: var(--cyan); }
+    .ci-green { background: rgba(0,255,157,0.15); color: var(--green); }
+    .ci-magenta { background: rgba(255,0,127,0.15); color: var(--magenta); }
+    .ci-amber { background: rgba(255,184,0,0.15); color: var(--amber); }
+
+    /* ──────────── TERMINAL MOCK ──────────── */
+    .terminal {
+      border-radius: 14px; overflow: hidden;
+      background: rgba(4, 8, 16, 0.95);
+      border: 1px solid rgba(0,240,255,0.18);
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .terminal-bar {
+      background: rgba(10,16,28,0.95);
+      border-bottom: 1px solid rgba(0,240,255,0.12);
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .terminal-body { padding: 18px 20px; }
+    .t-line { font-size: 0.82rem; line-height: 1.9; }
+    .t-prompt { color: var(--green); }
+    .t-cmd { color: var(--text-main); }
+    .t-out { color: var(--text-muted); }
+    .t-val-cyan { color: var(--cyan); }
+    .t-val-green { color: var(--green); }
+    .t-val-magenta { color: var(--magenta); }
+    .t-val-amber { color: var(--amber); }
+    .t-cursor {
+      display: inline-block; width: 8px; height: 14px;
+      background: var(--cyan); vertical-align: middle;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    /* ──────────── STREAM PROTOCOLS ──────────── */
+    .proto-showcase {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .proto-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 30px;
+      font-size: 0.82rem; font-weight: 700;
+      border: 1px solid;
+      transition: var(--transition);
+    }
+    .proto-pill:hover { transform: translateY(-2px); }
+    .pp-rtsp { color: var(--cyan); border-color: rgba(0,240,255,0.35); background: rgba(0,240,255,0.07); }
+    .pp-rtmp { color: var(--magenta); border-color: rgba(255,0,127,0.35); background: rgba(255,0,127,0.07); }
+    .pp-webrtc { color: var(--green); border-color: rgba(0,255,157,0.35); background: rgba(0,255,157,0.07); }
+    .pp-ndi { color: var(--amber); border-color: rgba(255,184,0,0.35); background: rgba(255,184,0,0.07); }
+    .pp-hls { color: var(--purple); border-color: rgba(168,85,247,0.35); background: rgba(168,85,247,0.07); }
+    .pp-srt { color: #5cf; border-color: rgba(85,204,255,0.35); background: rgba(85,204,255,0.07); }
+
+    /* ──────────── PRICING TIERS ──────────── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      max-width: 860px;
+      margin: 0 auto;
+      gap: 24px;
+      align-items: stretch;
+    }
+    .price-card {
+      padding: 30px 24px; border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      position: relative; overflow: hidden;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .price-card:hover { transform: translateY(-5px); }
+    .price-card.featured {
+      background: linear-gradient(160deg, rgba(0,240,255,0.06), rgba(255,0,127,0.06));
+      border-color: rgba(0,240,255,0.4);
+      box-shadow: 0 0 60px rgba(0,240,255,0.08);
+    }
+    .price-card.featured::before {
+      content: '✦ MOST POPULAR';
+      position: absolute; top: 0; right: 0;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta));
+      color: #020811;
+      font-size: 0.62rem; font-weight: 900; letter-spacing: 1.5px;
+      padding: 5px 14px; border-radius: 0 18px 0 12px;
+    }
+    .price-tier { font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .price-name { font-size: 1.4rem; font-weight: 900; margin-bottom: 6px; }
+    .price-amount {
+      font-size: 2.4rem; font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .price-per { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 24px; }
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; flex-grow: 1; }
+    .price-features li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.88rem; color: var(--text-muted);
+    }
+    .pf-icon { font-size: 0.85rem; }
+    .price-btn {
+      display: block; text-align: center;
+      padding: 13px; border-radius: 12px;
+      font-size: 0.92rem; font-weight: 800; letter-spacing: 0.5px;
+      text-decoration: none; transition: var(--transition);
+      cursor: pointer; border: none;
+    }
+    .price-btn-outline {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      color: var(--text-main);
+    }
+    .price-btn-outline:hover { border-color: rgba(0,240,255,0.4); color: var(--cyan); }
+    .price-btn-gradient {
+      background: linear-gradient(135deg, #00f0ff, #00aacc);
+      color: #020811;
+      box-shadow: 0 4px 20px rgba(0,240,255,0.35);
+    }
+    .price-btn-gradient:hover { box-shadow: 0 8px 40px rgba(0,240,255,0.55); transform: translateY(-2px); }
+
+    /* ──────────── TESTIMONIALS ──────────── */
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .testi-card {
+      padding: 24px; border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      transition: var(--transition);
+    }
+    .testi-card:hover { border-color: rgba(0,240,255,0.3); transform: translateY(-3px); }
+    .testi-stars { font-size: 0.9rem; color: var(--amber); margin-bottom: 14px; letter-spacing: 2px; }
+    .testi-text { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; font-style: italic; margin-bottom: 18px; }
+    .testi-author { display: flex; align-items: center; gap: 10px; }
+    .testi-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .testi-name { font-size: 0.88rem; font-weight: 700; }
+    .testi-role { font-size: 0.74rem; color: var(--text-muted); }
+
+    /* ──────────── CTA SECTION ──────────── */
+    .cta-section {
+      text-align: center;
+      padding: 80px 24px 120px;
+    }
+    .cta-glow-box {
+      position: relative;
+      max-width: 800px; margin: 0 auto;
+      padding: 64px 40px;
+      border-radius: 28px;
+      background: var(--bg-card);
+      border: 1px solid rgba(0,240,255,0.25);
+      overflow: hidden;
+    }
+    .cta-glow-box::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,240,255,0.06), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-glow-box h2 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900; margin-bottom: 16px;
+    }
+    .cta-glow-box p {
+      font-size: 1.05rem; color: var(--text-muted); line-height: 1.7;
+      max-width: 500px; margin: 0 auto 36px;
+    }
+
+    /* ──────────── FOOTER ──────────── */
+    footer {
+      border-top: 1px solid rgba(0,240,255,0.1);
+      padding: 36px 32px;
+      display: flex; flex-wrap: wrap;
+      justify-content: space-between; align-items: center; gap: 16px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .footer-brand {
+      font-size: 0.95rem; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .footer-text { font-size: 0.76rem; color: var(--text-dim); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; transition: var(--transition); }
+    .footer-links a:hover { color: var(--cyan); }
+
+    /* ──────────── ANIMATIONS ──────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(0.9); opacity: 0.7; }
+      50%      { transform: scale(1.3); opacity: 1; }
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+    @keyframes scanline {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(200%); }
+    }
+
+    /* scroll reveal utility */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,240,255,0.2), transparent);
+      margin: 0 auto; max-width: 1200px;
+    }
+
+    /* section center */
+    .section-center { text-align: center; }
+    .section-center .section-desc { margin-left: auto; margin-right: auto; }
+  </style>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="icon" type="image/png" href="assets/logo.png?v=20260919">
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+<div class="bg-grid"></div>
+
+<!-- ══════════ NAV ══════════ -->
+<nav>
+  <a class="nav-brand" href="#">
+    <img src="assets/logo.png?v=20260919" class="nav-logo" alt="MundoStreamer Logo">
+    <div>
+      <div class="nav-wordmark">MundoStreamer</div>
+      <div class="nav-tagline">Professional FPV Ground Station</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#streaming">Streaming</a></li>
+    <li><a href="#dvr">DVR &amp; Recording</a></li>
+    <li><a href="#specs">Specs</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#gallery">UI Tour</a></li>
+    <li><a href="#downloads">📖 Manuals</a></li>
+    <li><a class="nav-cta" href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Team%2C%20I%20am%20interested%20in%20MundoStreamer%20PRO%20License" target="_blank" style="color:#25d366!important;border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.1);">💬 WhatsApp Support</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero" style="max-width:100%;padding-top:100px;">
+  <div class="hero-logo-box">
+    <img src="assets/logo.png?v=20260919" class="hero-logo-img" alt="MundoStreamer Official Logo">
+  </div>
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    NOW STREAMING · FPV GROUND STATION PLATFORM
+  </div>
+  <h1>
+    <div class="line-cyan">See Everything.</div>
+    <div class="line-white">Record Everything.</div>
+    <div class="line-magenta">Stream to the World.</div>
+  </h1>
+  <p class="hero-sub">
+    MundoStreamer transforms your <strong>Radxa ROCK 3A</strong> or <strong>Raspberry Pi 4B</strong> into a professional-grade FPV ground station —
+    with crystal-clear 1080p60 recording, sub-100ms live streaming, and a sleek web dashboard
+    accessible from any device on your network.
+  </p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="#pricing">
+      ⚡ Get PRO License ($49)
+    </a>
+    <a class="btn-secondary" href="#downloads" style="border-color:rgba(0,240,255,0.6);color:var(--cyan);">
+      📖 Download Manual (ID/EN/CN)
+    </a>
+    <a class="btn-secondary" href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Support%2C%20I%20have%20an%20inquiry%20about%20MundoStreamer" target="_blank" style="border-color:rgba(37,211,102,0.5);color:#25d366;">
+      💬 WhatsApp Support
+    </a>
+  </div>
+
+  <div class="stats-strip">
+    <div class="stat-chip">
+      <div class="stat-num">60 FPS</div>
+      <div class="stat-label">Silky Smooth 60Hz HDMI</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-num">&lt;100ms</div>
+      <div class="stat-label">RTSP Latency</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-num">2-in-1</div>
+      <div class="stat-label">ROCK 3A + Pi 4B</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-num">1080p</div>
+      <div class="stat-label">H.264 / H.265</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-num">6+</div>
+      <div class="stat-label">Stream Protocols</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-num">0%</div>
+      <div class="stat-label">Frame Drop Rate</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section id="features">
+  <div class="section-center reveal">
+    <div class="section-badge badge-cyan">✦ Core Features</div>
+    <h2 class="section-title">Everything Your FPV Ground Station Needs</h2>
+    <p class="section-desc">
+      A complete, battle-tested solution built for DJI O3/O4 Air Unit — covering live display,
+      local recording, and simultaneous multi-protocol streaming.
+    </p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feat-card cyan reveal reveal-delay-1">
+      <div class="feat-icon icon-cyan">📺</div>
+      <div class="feat-title">60 FPS Direct HDMI Live Display</div>
+      <p class="feat-desc">
+        Hardware DRM/KMS direct rendering delivers silky smooth 60 FPS on your HDMI monitor —
+        zero tearing, zero stutter, bypassing desktop compositors. Direct hardware plane locked to 60.00 Hz.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-cyan">DRM/KMS</span>
+        <span class="feat-tag tag-green">Hardware Accel</span>
+        <span class="feat-tag tag-cyan">Zero Tearing</span>
+      </div>
+    </div>
+
+    <div class="feat-card magenta reveal reveal-delay-2">
+      <div class="feat-icon icon-magenta">🎬</div>
+      <div class="feat-title">Professional DVR Recording</div>
+      <p class="feat-desc">
+        Records every flight to web-optimized MP4 with FastStart flag — ready to share immediately.
+        Supports both H.264 and H.265 (HEVC) at configurable bitrates. Pure video DVR for maximum stability.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-magenta">H.264 / H.265</span>
+        <span class="feat-tag tag-green">MP4 FastStart</span>
+        <span class="feat-tag tag-amber">Auto-Save</span>
+      </div>
+    </div>
+
+    <div class="feat-card green reveal reveal-delay-3">
+      <div class="feat-icon icon-green">📡</div>
+      <div class="feat-title">Multi-Protocol Streaming</div>
+      <p class="feat-desc">
+        Simultaneously stream via RTSP, RTMP, WebRTC, NDI, HLS, and SRT.
+        Go live to YouTube, Facebook, Twitch, or any RTMP destination while your local network
+        receives ultra-low-latency RTSP.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-green">RTSP</span>
+        <span class="feat-tag tag-magenta">RTMP</span>
+        <span class="feat-tag tag-cyan">WebRTC</span>
+        <span class="feat-tag tag-amber">NDI</span>
+      </div>
+    </div>
+
+    <div class="feat-card amber reveal reveal-delay-1">
+      <div class="feat-icon icon-amber">⚡</div>
+      <div class="feat-title">Real-Time Web Dashboard</div>
+      <p class="feat-desc">
+        Beautiful cyberpunk-themed web UI accessible from any phone, tablet, or laptop on your network.
+        Monitor FPS, CPU temperature, recording status, and control all settings on-the-fly.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-amber">Live Telemetry</span>
+        <span class="feat-tag tag-cyan">Mobile Ready</span>
+        <span class="feat-tag tag-green">Real-Time</span>
+      </div>
+    </div>
+
+    <div class="feat-card purple reveal reveal-delay-2">
+      <div class="feat-icon icon-purple">🎨</div>
+      <div class="feat-title">Custom LUT Color Grading</div>
+      <p class="feat-desc">
+        Apply custom LUT (Look-Up Table) color profiles to your live feed and recordings.
+        Create cinematic looks, fix white balance, or apply FPV-specific color science — all in real time.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-purple">Custom LUT</span>
+        <span class="feat-tag tag-cyan">Live Preview</span>
+        <span class="feat-tag tag-amber">Cinematic</span>
+      </div>
+    </div>
+
+    <div class="feat-card cyan reveal reveal-delay-3">
+      <div class="feat-icon icon-cyan">🛡️</div>
+      <div class="feat-title">OTA Updates &amp; Auto Rollback</div>
+      <p class="feat-desc">
+        Seamlessly update MundoStreamer via the web dashboard. Automatic snapshot backup
+        before every update — one-click rollback if anything goes wrong. Your system is always safe.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-cyan">OTA Update</span>
+        <span class="feat-tag tag-green">Auto Backup</span>
+        <span class="feat-tag tag-magenta">1-Click Rollback</span>
+      </div>
+    </div>
+
+    <div class="feat-card green reveal reveal-delay-1">
+      <div class="feat-icon icon-green">📱</div>
+      <div class="feat-title">DJI Fly App Integration</div>
+      <p class="feat-desc">
+        Connect your phone running DJI Fly app directly through the ground station.
+        Relay telemetry and control signals while simultaneously streaming and recording —
+        no functionality compromised.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-green">DJI Fly</span>
+        <span class="feat-tag tag-cyan">Telemetry Relay</span>
+        <span class="feat-tag tag-amber">Wi-Fi Hotspot</span>
+      </div>
+    </div>
+
+    <div class="feat-card magenta reveal reveal-delay-2">
+      <div class="feat-icon icon-magenta">🌡️</div>
+      <div class="feat-title">Thermal-Optimized Performance</div>
+      <p class="feat-desc">
+        Smart CPU scheduling with Nice=-15 priority ensures the streaming pipeline always wins.
+        Stable at 61°C with only ~20% CPU usage even during simultaneous record + stream + display.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-magenta">Nice=-15</span>
+        <span class="feat-tag tag-cyan">~20% CPU</span>
+        <span class="feat-tag tag-green">61°C Stable</span>
+      </div>
+    </div>
+
+    <div class="feat-card amber reveal reveal-delay-3">
+      <div class="feat-icon icon-amber">🗂️</div>
+      <div class="feat-title">USB Drive DVR Storage</div>
+      <p class="feat-desc">
+        Automatically detects and records to any connected USB drive. Hot-swap support —
+        plug in a drive during operation and MundoStreamer starts recording to it immediately.
+        Never worry about internal storage limits again.
+      </p>
+      <div class="feat-tags">
+        <span class="feat-tag tag-amber">USB Hot-Swap</span>
+        <span class="feat-tag tag-cyan">Auto-Detect</span>
+        <span class="feat-tag tag-green">Unlimited Storage</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ STREAMING PROTOCOLS ══════════ -->
+<section id="streaming" style="padding-top:80px;">
+  <div class="dual-col">
+    <div class="reveal">
+      <div class="section-badge badge-magenta">📡 Streaming Engine</div>
+      <h2 class="section-title">
+        Stream to <em style="color:var(--magenta)">Anywhere</em>,<br>in Any Protocol
+      </h2>
+      <p class="section-desc">
+        Powered by MediaMTX, MundoStreamer outputs to every major streaming protocol simultaneously —
+        your local network, your studio, and the entire internet at once.
+      </p>
+
+      <div class="proto-showcase" style="margin-bottom:32px;">
+        <span class="proto-pill pp-rtsp">📺 RTSP</span>
+        <span class="proto-pill pp-rtmp">🎯 RTMP</span>
+        <span class="proto-pill pp-webrtc">🌐 WebRTC</span>
+        <span class="proto-pill pp-ndi">🎥 NDI</span>
+        <span class="proto-pill pp-hls">📲 HLS</span>
+        <span class="proto-pill pp-srt">⚡ SRT</span>
+      </div>
+
+      <ul class="checklist">
+        <li>
+          <span class="check-icon ci-cyan">✓</span>
+          <div><strong style="color:var(--text-main)">YouTube / Facebook / Twitch</strong> — Go live with one click via RTMP</div>
+        </li>
+        <li>
+          <span class="check-icon ci-green">✓</span>
+          <div><strong style="color:var(--text-main)">VLC / OBS Studio</strong> — Connect via RTSP for zero-latency monitoring</div>
+        </li>
+        <li>
+          <span class="check-icon ci-magenta">✓</span>
+          <div><strong style="color:var(--text-main)">Browser WebRTC</strong> — Watch the live feed from any browser, no app needed</div>
+        </li>
+        <li>
+          <span class="check-icon ci-amber">✓</span>
+          <div><strong style="color:var(--text-main)">NDI for Production</strong> — Connect to vMix, Wirecast, or any NDI-aware switcher</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="reveal reveal-delay-2">
+      <div class="demo-screen">
+        <div class="demo-bar">
+          <div class="demo-dot" style="background:#ff5f57;border-radius:50%;"></div>
+          <div class="demo-dot" style="background:#febc2e;border-radius:50%;"></div>
+          <div class="demo-dot" style="background:#28c840;border-radius:50%;"></div>
+          <div class="demo-title">LIVE STREAM — FPV Feed</div>
+        </div>
+        <div class="demo-body">
+          <div class="video-mock">
+            <div class="video-mock-grid"></div>
+            <div class="video-overlay-hud">
+              <span class="hud-item hud-live">🔴 LIVE</span>
+              <span class="hud-item hud-res">1920×1080</span>
+              <span class="hud-item hud-fps">60 FPS</span>
+            </div>
+            <div class="video-mock-content">
+              <div class="video-drone">🚁</div>
+              <div class="video-fps-badge">H.265 · 25 Mbps · LIVE</div>
+            </div>
+            <div class="hud-rec">
+              <span class="hud-rec-dot"></span>
+              ⏺ REC 02:34:17
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.15);border-radius:8px;">
+              <span style="font-size:0.75rem;color:var(--cyan);font-weight:700;">📺 RTSP (Local)</span>
+              <span style="font-size:0.7rem;color:var(--green);font-weight:600;">● &lt;50ms</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,0,127,0.06);border:1px solid rgba(255,0,127,0.15);border-radius:8px;">
+              <span style="font-size:0.75rem;color:var(--magenta);font-weight:700;">🎯 RTMP → YouTube</span>
+              <span style="font-size:0.7rem;color:var(--green);font-weight:600;">● LIVE</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,255,157,0.06);border:1px solid rgba(0,255,157,0.15);border-radius:8px;">
+              <span style="font-size:0.75rem;color:var(--green);font-weight:700;">🌐 WebRTC (Browser)</span>
+              <span style="font-size:0.7rem;color:var(--green);font-weight:600;">● 3 viewers</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ DVR ══════════ -->
+<section id="dvr" style="padding-top:80px;">
+  <div class="dual-col reverse">
+    <div class="reveal">
+      <div class="section-badge badge-green">🎬 DVR Engine</div>
+      <h2 class="section-title">
+        Zero-Drop <em style="color:var(--green)">Flight Recording</em>
+      </h2>
+      <p class="section-desc">
+        Every second of flight, perfectly captured. MundoStreamer's DVR pipeline
+        is isolated from the HDMI renderer — so recording never impacts your live display.
+      </p>
+      <ul class="checklist">
+        <li>
+          <span class="check-icon ci-green">✓</span>
+          <div><strong style="color:var(--text-main)">7,081 frames recorded</strong> in a 2-minute flight — zero dropped</div>
+        </li>
+        <li>
+          <span class="check-icon ci-cyan">✓</span>
+          <div><strong style="color:var(--text-main)">MP4 FastStart</strong> — instantly playable before download finishes</div>
+        </li>
+        <li>
+          <span class="check-icon ci-amber">✓</span>
+          <div><strong style="color:var(--text-main)">USB external drive</strong> — automatic detection and hot-swap</div>
+        </li>
+        <li>
+          <span class="check-icon ci-magenta">✓</span>
+          <div><strong style="color:var(--text-main)">H.264 + H.265 selectable</strong> — trade file size for quality</div>
+        </li>
+        <li>
+          <span class="check-icon ci-green">✓</span>
+          <div><strong style="color:var(--text-main)">Configurable bitrate</strong> — up to 35 Mbps for cinema-quality footage</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="reveal reveal-delay-2">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="demo-dot" style="background:#ff5f57;border-radius:50%;"></div>
+          <div class="demo-dot" style="background:#febc2e;border-radius:50%;"></div>
+          <div class="demo-dot" style="background:#28c840;border-radius:50%;"></div>
+          <div class="demo-title">MundoStreamer Ground Station — Telemetry &amp; DVR Engine</div>
+        </div>
+        <div class="terminal-body" style="font-family:'Courier New', monospace; font-size:0.80rem; line-height:1.6; padding:16px;">
+          <div class="t-line"><span style="color:#00f0ff;font-weight:700;">● HOST SYSTEM:</span> <span class="t-out">Radxa ROCK 3A · Rockchip RK3568 Quad-Core ARM Cortex-A55 @ 2.0 GHz · Mali-G52 GPU</span></div>
+          <div class="t-line"><span style="color:#00ff9d;font-weight:700;">● HDMI OUTPUT:</span> <span class="t-out">Direct KMS Hardware Plane · </span><span style="color:#00ff9d;font-weight:700;">1080p @ 60.00 FPS</span><span class="t-out"> · Zero Tearing · V-Sync Locked</span></div>
+          <div class="t-line"><span style="color:#ffb800;font-weight:700;">● FLIGHT DVR:</span> <span class="t-out">H.265 (HEVC) MP4 FastStart · </span><span style="color:#00f0ff;">25.0 Mbps</span><span class="t-out"> · Zero Frame Drops · Auto Arm/Disarm</span></div>
+          <div class="t-line"><span style="color:#a855f7;font-weight:700;">● INSTANT REPLAY:</span> <span class="t-out">HDMI Symlink Direct Replay · Zero Goggles USB Disconnect · Live Flight Priority</span></div>
+          <div class="t-line"><span style="color:#ff007f;font-weight:700;">● BROADCAST:</span> <span class="t-out">NDI Source (MundoStreamer-FPV) · WebRTC (&lt;150ms) · RTSP Server (Port 8554)</span></div>
+          <div class="t-line"><span style="color:#00f0ff;font-weight:700;">● AUDIO PIPELINE:</span> <span class="t-out">3.5mm TRRS Commentator Mic (RK809 Codec) Mixed at 48kHz AAC Stereo</span></div>
+          <div class="t-line"><span style="color:#00ff9d;font-weight:700;">● TELEMETRY:</span> <span class="t-out">SoC Core Temp </span><span style="color:#00ff9d;font-weight:700;">52°C</span><span class="t-out"> · CPU Load 18% · RAM 3.2GB Free · Status: </span><span style="color:#00ff9d;font-weight:700;">OPTIMAL</span></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="text-align:center;padding:14px;background:var(--bg-card);border:1px solid rgba(0,255,157,0.2);border-radius:12px;">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--green);">60.00</div>
+          <div style="font-size:0.68rem;color:var(--text-muted);">HDMI Output FPS</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg-card);border:1px solid rgba(0,240,255,0.2);border-radius:12px;">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--cyan);">H.265</div>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Full HD DVR FastStart</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg-card);border:1px solid rgba(255,184,0,0.2);border-radius:12px;">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--amber);">0</div>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Frames Dropped</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="divider"></div>
+
+<!-- ══════════ SCREENSHOT UI TOUR ══════════ -->
+<section id="gallery">
+  <div class="section-center reveal">
+    <div class="section-badge badge-cyan">🖥️ Sleek Web Dashboard</div>
+    <h2 class="section-title">Zero-Install Web Management Console</h2>
+    <p class="section-desc">
+      Control everything directly from your smartphone, tablet, or laptop browser.
+      Responsive cyberpunk interface in pure English — fast, responsive, and always in sync.
+    </p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:24px;">
+    <div class="feat-card cyan reveal reveal-delay-1" style="padding:16px;">
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.2);margin-bottom:14px;">
+        <img src="assets/streaming.png" alt="Streaming Control" style="width:100%;height:auto;display:block;border-radius:10px;">
+      </div>
+      <div class="feat-title">📡 Multi-Protocol Streaming Dashboard</div>
+      <p class="feat-desc">One-click switcher for HDMI Only, HDMI + Local Network, or HDMI + Internet RTMP. Live WebRTC link generation.</p>
+    </div>
+
+    <div class="feat-card green reveal reveal-delay-2" style="padding:16px;">
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(0,255,157,0.2);margin-bottom:14px;">
+        <img src="assets/recording.png" alt="DVR Recording" style="width:100%;height:auto;display:block;border-radius:10px;">
+      </div>
+      <div class="feat-title">🎬 Smart DVR & Storage Guard</div>
+      <p class="feat-desc">Manual flight recording toggle, configurable bitrate, pure video mode, and automatic MicroSD/USB fallback.</p>
+    </div>
+
+    <div class="feat-card magenta reveal reveal-delay-3" style="padding:16px;">
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,0,127,0.2);margin-bottom:14px;">
+        <img src="assets/display.png" alt="HDMI Display" style="width:100%;height:auto;display:block;border-radius:10px;">
+      </div>
+      <div class="feat-title">📺 Direct DRM/KMS HDMI & Display</div>
+      <p class="feat-desc">Hardware accelerated 60 FPS pacing, aspect ratio scaling, dynamic dewarp correction, and standby loops.</p>
+    </div>
+
+    <div class="feat-card purple reveal reveal-delay-1" style="padding:16px;">
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(168,85,247,0.2);margin-bottom:14px;">
+        <img src="assets/gallery.png" alt="Gallery & Media" style="width:100%;height:auto;display:block;border-radius:10px;">
+      </div>
+      <div class="feat-title">📁 Integrated File Manager</div>
+      <p class="feat-desc">Consolidated storage manager: browse, play back, and download recordings directly to your phone or computer.</p>
+    </div>
+
+    <div class="feat-card amber reveal reveal-delay-2" style="padding:16px;">
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,184,0,0.2);margin-bottom:14px;">
+        <img src="assets/network.png" alt="Network & Wi-Fi" style="width:100%;height:auto;display:block;border-radius:10px;">
+      </div>
+      <div class="feat-title">📶 Dual Wi-Fi & Hotspot Management</div>
+      <p class="feat-desc">Instant AP Hotspot (5GHz/2.4GHz) or Client Mode with automatic safety-net reconnection.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ USER MANUAL DOWNLOADS ══════════ -->
+<section id="downloads" style="padding-top:80px;">
+  <div class="section-center reveal">
+    <div class="section-badge badge-green">📚 Official Documentation</div>
+    <h2 class="section-title">Download MundoStreamer User Manual</h2>
+    <p class="section-desc">
+      Comprehensive 15-page field operational guide complete with high-resolution Web UI screenshots,
+      hardware port mapping, instant HDMI replay instructions, audio setup, and troubleshooting matrices.
+      Available in 3 languages.
+    </p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:24px;margin-top:32px;">
+    <!-- Indonesian Card -->
+    <div class="feat-card green reveal reveal-delay-1" style="display:flex;flex-direction:column;justify-content:space-between;padding:24px;border:1px solid rgba(0,255,157,0.3);position:relative;">
+      <div style="position:absolute;top:16px;right:16px;background:rgba(0,255,157,0.15);color:var(--green);border:1px solid rgba(0,255,157,0.3);padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:800;letter-spacing:1px;">
+        🇮🇩 INDONESIAN
+      </div>
+      <div>
+        <div style="font-size:2.2rem;margin-bottom:10px;">🇮🇩</div>
+        <div class="feat-title" style="font-size:1.25rem;margin-bottom:6px;">Panduan Pengguna Resmi</div>
+        <div style="font-size:0.8rem;color:var(--cyan);font-weight:700;margin-bottom:14px;">
+          Bahasa Indonesia · v2.4.0 · 15 Halaman · 5.6 MB PDF
+        </div>
+        <p class="feat-desc" style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+          Panduan lengkap berbahasa Indonesia dengan tangkapan layar seluruh 10 tab Web UI.
+          Memuat panduan koneksi cepat 2 menit, peta port Radxa ROCK 3A, rekam DVR H.265,
+          fitur replay instan HDMI, dan nomor WhatsApp teknisi resmi.
+        </p>
+        <ul style="list-style:none;padding:0;margin:0 0 20px 0;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;color:var(--text-muted);">
+          <li><span style="color:var(--green);font-weight:bold;">✓</span> 12+ Tangkapan Layar Web UI Asli</li>
+          <li><span style="color:var(--green);font-weight:bold;">✓</span> Panduan Saklar Fisik OTG &amp; Port I/O</li>
+          <li><span style="color:var(--green);font-weight:bold;">✓</span> Tutorial Streaming OBS &amp; Replay HDMI</li>
+          <li><span style="color:var(--green);font-weight:bold;">✓</span> Kontak WhatsApp Layanan Pelanggan</li>
+        </ul>
+      </div>
+      <a href="downloads/MundoStreamer_User_Manual_ID.pdf" download="MundoStreamer_User_Manual_ID.pdf" class="btn-primary" style="text-align:center;text-decoration:none;display:block;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 0 20px rgba(0,255,157,0.35);">
+        ⬇ Unduh Panduan (ID)
+      </a>
+    </div>
+
+    <!-- English Card -->
+    <div class="feat-card cyan reveal reveal-delay-2" style="display:flex;flex-direction:column;justify-content:space-between;padding:24px;border:1px solid rgba(0,240,255,0.35);box-shadow:0 0 30px rgba(0,240,255,0.1);position:relative;">
+      <div style="position:absolute;top:16px;right:16px;background:rgba(0,240,255,0.15);color:var(--cyan);border:1px solid rgba(0,240,255,0.3);padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:800;letter-spacing:1px;">
+        🇬🇧 ENGLISH PRO
+      </div>
+      <div>
+        <div style="font-size:2.2rem;margin-bottom:10px;">🇬🇧</div>
+        <div class="feat-title" style="font-size:1.25rem;margin-bottom:6px;">Official User Manual</div>
+        <div style="font-size:0.8rem;color:var(--cyan);font-weight:700;margin-bottom:14px;">
+          English Edition · v2.4.0 PRO · 15 Pages · 5.6 MB PDF
+        </div>
+        <p class="feat-desc" style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+          Comprehensive international field operations manual. Features full hardware topology,
+          2-minute rapid deployment steps, WebRTC &amp; NDI production broadcast workflows,
+          instant HDMI zero-disconnect replay, and complete troubleshooting matrices.
+        </p>
+        <ul style="list-style:none;padding:0;margin:0 0 20px 0;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;color:var(--text-muted);">
+          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Full HD Web Dashboard Screenshots</li>
+          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Radxa ROCK 3A &amp; Hardware I/O Pinout</li>
+          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> OBS Studio, vMix &amp; NDI Setup Guide</li>
+          <li><span style="color:var(--cyan);font-weight:bold;">✓</span> Cryptographic Machine ID &amp; Licensing</li>
+        </ul>
+      </div>
+      <a href="downloads/MundoStreamer_User_Manual_EN.pdf" download="MundoStreamer_User_Manual_EN.pdf" class="btn-primary" style="text-align:center;text-decoration:none;display:block;">
+        ⬇ Download Manual (EN)
+      </a>
+    </div>
+
+    <!-- Chinese Card -->
+    <div class="feat-card magenta reveal reveal-delay-3" style="display:flex;flex-direction:column;justify-content:space-between;padding:24px;border:1px solid rgba(255,0,127,0.3);position:relative;">
+      <div style="position:absolute;top:16px;right:16px;background:rgba(255,0,127,0.15);color:var(--magenta);border:1px solid rgba(255,0,127,0.3);padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:800;letter-spacing:1px;">
+        🇨🇳 SIMPLIFIED CHINESE
+      </div>
+      <div>
+        <div style="font-size:2.2rem;margin-bottom:10px;">🇨🇳</div>
+        <div class="feat-title" style="font-size:1.25rem;margin-bottom:6px;">官方用户操作手册</div>
+        <div style="font-size:0.8rem;color:var(--magenta);font-weight:700;margin-bottom:14px;">
+          中文版 (简体中文) · v2.4.0 商业版 · 15 页 · 5.7 MB PDF
+        </div>
+        <p class="feat-desc" style="font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+          官方大疆 FPV 地面接收站完整中文操作手册。详尽图解 Radxa ROCK 3A 硬件接口、
+          2分钟现场极速开机流程、全功能 Web UI 控制台图文指引、NDI 免配局域网广播及
+          免拔插 HDMI 极速回放黑科技。
+        </p>
+        <ul style="list-style:none;padding:0;margin:0 0 20px 0;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;color:var(--text-muted);">
+          <li><span style="color:var(--magenta);font-weight:bold;">✓</span> 12+ 核心控制台全彩高清截图</li>
+          <li><span style="color:var(--magenta);font-weight:bold;">✓</span> 硬件端口接线拓扑与 OTG 开关规范</li>
+          <li><span style="color:var(--magenta);font-weight:bold;">✓</span> OBS / vMix / WebRTC 现场转播方案</li>
+          <li><span style="color:var(--magenta);font-weight:bold;">✓</span> 官方客服与 WhatsApp 极速技术支持</li>
+        </ul>
+      </div>
+      <a href="downloads/MundoStreamer_User_Manual_CN.pdf" download="MundoStreamer_User_Manual_CN.pdf" class="btn-primary" style="text-align:center;text-decoration:none;display:block;background:linear-gradient(135deg,var(--magenta),var(--amber));box-shadow:0 0 20px rgba(255,0,127,0.35);">
+        ⬇ 下载中文手册 (CN)
+      </a>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;padding:18px 24px;background:rgba(0,240,255,0.04);border:1px solid rgba(0,240,255,0.18);border-radius:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:1.6rem;">⚡</span>
+      <div>
+        <strong style="color:var(--text-main);font-size:0.92rem;">Direct High-Speed Download</strong>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Hosted locally on your ground station · No registration or login required</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Team%2C%20I%20have%20questions%20about%20the%20User%20Manual" target="_blank" style="font-size:0.82rem;color:#25d366;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:6px;">
+        💬 Priority Tech Support: +62 856-4722-9919
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ TECH SPECS ══════════ -->
+<section id="specs">
+  <div class="section-center reveal">
+    <div class="section-badge badge-purple">⚙️ Technical Specs</div>
+    <h2 class="section-title">Built for Two Proven Platforms</h2>
+    <p class="section-desc">
+      MundoStreamer runs natively on two battle-tested single-board computers — 
+      the Radxa ROCK 3A (RK3568) and Raspberry Pi 4B (BCM2711). Pick the hardware that fits your mission.
+    </p>
+  </div>
+  <div class="protocol-row reveal reveal-delay-1">
+    <div class="proto-card">
+      <div class="proto-icon">⚡</div>
+      <div class="proto-name">Radxa ROCK 3A</div>
+      <div class="proto-desc">RK3568 Quad-Core A55 @ 2.0GHz · Mali-G52 GPU · Dedicated VPU · <strong style="color:var(--cyan);">RECOMMENDED</strong></div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">🍓</div>
+      <div class="proto-name">Raspberry Pi 4B</div>
+      <div class="proto-desc">BCM2711 Quad-Core Cortex-A72 @ 1.5GHz · VideoCore VI GPU · Broadcom SoC</div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">🎮</div>
+      <div class="proto-name">DJI O3 / O4 &amp; Goggles</div>
+      <div class="proto-desc">Goggles V1, V2, G2, Integra, G3 · Full 1080p@60fps direct pipeline</div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">🔧</div>
+      <div class="proto-name">MediaMTX &amp; NDI Engine</div>
+      <div class="proto-desc">Zero-latency media server · NDI, WebRTC, RTSP, RTMP simultaneous</div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">📺</div>
+      <div class="proto-name">Direct KMS Plane</div>
+      <div class="proto-desc">Debian 12 Bookworm (ROCK 3A) · Raspberry Pi OS (Pi 4B) · Direct KMS plane · 60.00 Hz V-Sync</div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">🔒</div>
+      <div class="proto-name">Ed25519 V2 Machine Lock</div>
+      <div class="proto-desc">Hardware-bound · Silicon serial locked · Offline verification</div>
+    </div>
+    <div class="proto-card">
+      <div class="proto-icon">🌡️</div>
+      <div class="proto-name">Thermal Stability</div>
+      <div class="proto-desc">52°C peak · 80%+ CPU headroom · 24/7 tournament reliable</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ TESTIMONIALS ══════════ -->
+<section>
+  <div class="section-center reveal">
+    <div class="section-badge badge-amber">💬 Community</div>
+    <h2 class="section-title">Loved by FPV Pilots Worldwide</h2>
+    <p class="section-desc">From weekend hobbyists to professional race broadcasters.</p>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal reveal-delay-1">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">
+        "I used to spend hours post-processing DVR footage. With MundoStreamer, everything comes out
+        web-ready and perfectly color-graded. The HDMI display is the smoothest I've ever seen on an FPV ground station."
+      </p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:rgba(0,240,255,0.15);">🎯</div>
+        <div>
+          <div class="testi-name">Marco V.</div>
+          <div class="testi-role">FPV Race Pilot · Italy</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal reveal-delay-2">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">
+        "We run MundoStreamer at every major FPV event. It streams to YouTube, Facebook, and our
+        production switcher via NDI — all simultaneously. Rock solid for hours of continuous operation."
+      </p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:rgba(255,0,127,0.15);">🎥</div>
+        <div>
+          <div class="testi-name">Sarah K.</div>
+          <div class="testi-role">FPV Event Broadcaster · USA</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal reveal-delay-3">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">
+        "The web dashboard is incredibly intuitive. I can control everything from my phone while flying.
+        The OTA update system means I'm always on the latest version without touching a terminal."
+      </p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:rgba(0,255,157,0.15);">🚁</div>
+        <div>
+          <div class="testi-name">Aditya R.</div>
+          <div class="testi-role">Freestyle Pilot · Indonesia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ PRICING ══════════ -->
+<section id="pricing">
+  <div class="section-center reveal">
+    <div class="section-badge badge-cyan">💎 Licensing</div>
+    <h2 class="section-title">Simple, Honest Pricing</h2>
+    <p class="section-desc">
+      One-time purchase, lifetime license. No subscriptions, no hidden fees.
+      Your MundoStreamer runs forever.
+    </p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card featured reveal reveal-delay-1">
+      <div class="price-tier">Professional</div>
+      <div class="price-name">PRO License</div>
+      <div class="price-amount">$49</div>
+      <div class="price-per">one-time · lifetime · 1 device</div>
+      <ul class="price-features">
+        <li><span class="pf-icon">✅</span> Full DVR Recording</li>
+        <li><span class="pf-icon">✅</span> HDMI Live Display</li>
+        <li><span class="pf-icon">✅</span> All 6 Stream Protocols</li>
+        <li><span class="pf-icon">✅</span> RTMP → YouTube/FB/Twitch</li>
+        <li><span class="pf-icon">✅</span> NDI Production Output</li>
+        <li><span class="pf-icon">✅</span> Custom LUT Color Grading</li>
+        <li><span class="pf-icon">✅</span> OTA Updates Forever</li>
+        <li><span class="pf-icon">✅</span> Priority Support</li>
+      </ul>
+      <a href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Support%2C%20I%20want%20to%20purchase%20a%20MundoStreamer%20PRO%20License%20($49)" target="_blank" class="price-btn price-btn-gradient" style="text-decoration:none;display:inline-block;text-align:center;">⚡ Buy PRO License ($49)</a>
+    </div>
+
+    <div class="price-card reveal reveal-delay-2">
+      <div class="price-tier">Enterprise</div>
+      <div class="price-name">Team / Event</div>
+      <div class="price-amount">$199</div>
+      <div class="price-per">one-time · 10 devices</div>
+      <ul class="price-features">
+        <li><span class="pf-icon">✅</span> Everything in PRO</li>
+        <li><span class="pf-icon">✅</span> 10 Device Licenses</li>
+        <li><span class="pf-icon">✅</span> White-Label Option</li>
+        <li><span class="pf-icon">✅</span> Custom Branding</li>
+        <li><span class="pf-icon">✅</span> Dedicated Support</li>
+        <li><span class="pf-icon">✅</span> Early Access Updates</li>
+      </ul>
+      <a href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Support%2C%20I%20want%20to%20inquire%20about%20Team%20/%20Event%20Licenses" target="_blank" class="price-btn price-btn-outline" style="text-decoration:none;display:inline-block;text-align:center;">💬 Contact for Team Deal</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ CTA ══════════ -->
+<div class="cta-section" id="cta">
+  <div class="cta-glow-box reveal">
+    <div class="section-badge badge-cyan" style="margin-bottom:20px;">🚀 Ready to Fly?</div>
+    <h2>
+      Your FPV Ground Station,<br>
+      <span style="background:linear-gradient(90deg,var(--cyan),var(--magenta));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        Professionally Upgraded
+      </span>
+    </h2>
+    <p>
+      Join hundreds of FPV pilots and event broadcasters who trust MundoStreamer
+      for crystal-clear video, silky-smooth display, and reliable live streaming.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Support%2C%20I%20want%20to%20get%20MundoStreamer%20PRO" target="_blank">
+        ⚡ Get MundoStreamer PRO ($49)
+      </a>
+      <a class="btn-secondary" href="https://wa.me/6285647229919?text=Hello%20MundoStreamer%20Support%2C%20I%20need%20assistance" target="_blank" style="border-color:#25d366;color:#25d366;">
+        💬 WhatsApp: +62 856-4722-9919
+      </a>
+    </div>
+    <div style="margin-top:28px;font-size:0.8rem;color:var(--text-dim);">
+      🔒 Hardware-bound Ed25519 license · Offline verified · Lifetime updates included
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div>
+    <div class="footer-brand" style="display:flex;align-items:center;gap:12px;">
+      <img src="assets/logo.png?v=20260919" style="width:36px;height:36px;border-radius:10px;border:1.5px solid var(--cyan);box-shadow:0 0 15px rgba(0,240,255,0.4);object-fit:cover;background:rgba(6,9,14,0.8);" alt="MundoStreamer Logo">
+      <span>MundoStreamer</span>
+    </div>
+    <div class="footer-text" style="margin-top:4px;">Professional FPV Ground Station · Built for DJI O3/O4 Air Unit</div>
+  </div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#gallery">UI Tour</a>
+    <a href="#downloads">User Manuals (PDF)</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://wa.me/6285647229919" target="_blank">WhatsApp Support</a>
+    <a href="https://t.me/+6285647229919" target="_blank">Telegram</a>
+  </div>
+  <div class="footer-text">© 2026 MundoStreamer. All rights reserved.</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  revealEls.forEach(el => io.observe(el));
+
+  // Smooth scroll for nav links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href === '#' || href === '') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Animated counter for stats
+  function animateCount(el, target, suffix='', duration=1200) {
+    const start = performance.now();
+    const update = now => {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      el.textContent = (typeof target === 'number' ? Math.round(target * ease) : target) + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+
+  // Animate stat numbers when visible
+  const statNums = document.querySelectorAll('.stat-num');
+  const statIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        statIo.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  statNums.forEach(el => statIo.observe(el));
+</script>
+</body>
+</html>
