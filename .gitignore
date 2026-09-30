@@ -1,4 +1,8 @@
 *.bak*
 *.log
+*.mscf
+*.msuf
+*.tar.gz
+*.zip
 .DS_Store
 Thumbs.db
